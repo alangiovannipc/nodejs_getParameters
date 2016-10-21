@@ -7,7 +7,8 @@ var fs = require("fs");
 //set a manage handler
 var manage_handler = function(req,res){
 	console.log("New Request");
-	var path = "./index.html";
+	var pathRequest = "./index.html";
+	var pathResponse = "./response.html";
 	var obParams = {};
 
 	//check if there are parameters in the url
@@ -27,15 +28,34 @@ var manage_handler = function(req,res){
 		console.log(" obParams :" );
 		console.dir(obParams);
 
-	}
+		//reading the html file for write in the response
+		fs.readFile(pathResponse,function(err,html){
+			var data = html.toString();
+			var regex = /[^\{\}]+(?=\})/g;
+			var keys = data.match(regex);
+			console.log("Keys to replace :\n" + keys);
 
-	//reading the html file for write in the response
-	fs.readFile(path,function(err,html){
-		var data = html.toString();
-		res.writeHead(200,{'Content-Type':'text/html'});
-		res.write(data);
-		res.end();
-	});
+			keys.forEach(function(val){
+				console.log(val)
+				data = data.replace("{{"+val+"}}",obParams[val]);
+				console.log(data)
+			})
+
+			res.writeHead(200,{'Content-Type':'text/html'});
+			res.write(data);
+			res.end();
+		});
+
+	}else{
+
+		//reading the html file for write in the response
+		fs.readFile(pathRequest,function(err,html){
+			var data = html.toString();
+			res.writeHead(200,{'Content-Type':'text/html'});
+			res.write(data);
+			res.end();
+		});
+	}
 	
 }
 
